@@ -1,18 +1,18 @@
 // // use std::collections::HashMap;
 // use std::io;
 
-// use reqwest::Error;
-// use reqwest::header::AUTHORIZATION;
+use reqwest::Error;
+use reqwest::header::AUTHORIZATION;
 
 use clap::Parser;
 use clap;
 
 use serde::{Deserialize, Serialize};
 
-use std::fs::File;
-use std::io::prelude::*;
+use std::fs;
+use std::io::Write;
 
-// use std::env;
+use dotenv::dotenv;
 
 mod args;
 
@@ -33,23 +33,33 @@ pub struct Args {
 }
 
 
-
-
-/*
-fn getAPI(prompt:String) -> Result<(), Error>{
-    
-    let key_api: &str = "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";
+// #[tokio::main]
+fn get_api(
+    prompt:String, 
+    token:String, 
+    user:String,
+    max_tokens:u32,
+    ) -> Result<(), Error>{
 
     let client = reqwest::blocking::Client::new();
 
     let response = client
         .post("https://api.openai.com/v1/chat/completions")
         .header("Content-Type", "application/json")
-        .header(AUTHORIZATION, format!("Bearer {}", key_api))
+        .header(AUTHORIZATION, format!("Bearer {}", token))
         .json(&serde_json::json!({
             "model": "gpt-3.5-turbo",
-            "messages": [{"role": "user", "content": prompt}],
-            // "max_tokens": 7,
+            "messages": [
+                {
+                    "role": "system", 
+                    "content": "You are a handy terminal command assistant that only responds to the command and response in pt-br. answer me in the space of 15 tokens"},
+                {
+                    "role": "user", 
+                    "content": prompt
+                }
+            ],
+            "user": user,
+            "max_tokens": max_tokens,
             // "temperature": 0,
             // "top_p": 1,
             // "n": 1,
@@ -63,26 +73,79 @@ fn getAPI(prompt:String) -> Result<(), Error>{
 
     Ok(())
 }
-*/
+
+
 fn main() {
-    // let args = Args::parse();
     
     let args = AssistantArgs::parse();
     
+    let max_tokens:u32 = 25;
+    let user:String = "Ian".to_string();
+    
     match args.helper {
-        HelperType::RegisterToken(RegisterToken) => {
-            println!("{}", RegisterToken.token);
+        HelperType::RegisterToken(register_token) => {
+            // println!("{}", RegisterToken.token);
             
-            // let mut file = File::create(".env")?;
-            // file.write_all(("TOKEN=".to_owned() + &RegisterToken.token).as_bytes())?;
+            let mut file = match fs::File::create(".env"){
+                Ok(file) => file,
+                Err(e) => panic!("Error: {}", e),
+            };
+            match file.write_all(("TOKEN=".to_owned() + &register_token.token).as_bytes()){
+                Ok(_) => return,
+                Err(e) => println!("Error: {}", e),
+            };
         },
 
-        HelperType::HelpCommand(HelpCommand) => {
-            println!("{}", HelpCommand.token);
+        
+        HelperType::HelpCommand(help_command) => {
+            // println!("{:?}", help_command.token);
+
+            match help_command.token {
+                Some(token) => {
+                    match get_api(
+                        help_command.question, 
+                        token, 
+                        user,
+                        max_tokens
+                        ){
+                            
+                        Ok(_) => return,
+                        Err(e) => println!("Error: {}", e),
+                    };
+                },
+                None => {
+                    if let Ok(metadata) = fs::metadata(".env") {
+                        if metadata.is_file() {
+                            
+                            dotenv().ok();
+                            let token = std::env::var("TOKEN").unwrap();
+
+                            match get_api(
+                                help_command.question, 
+                                token, 
+                                user,
+                                max_tokens
+                                ){
+                                    
+                                Ok(_) => return,
+                                Err(e) => println!("Error: {}", e),
+                            };
+
+                        } else {
+                            println!("Register the Token so you can make this call or use the ' --token ' parameter");
+                        }
+                    } else {
+                        println!("Register the Token so you can make this call or use the ' --token ' parameter");
+                    }
+                    return;
+                }
+            };
+
+            
         },
 
-        HelperType::CrateTranscription(CrateTranscription) => {
-            println!("{}", CrateTranscription.token);
+        HelperType::CrateTranscription(crate_transcription) => {
+            println!("{}", crate_transcription.token);
         },
     };
     // Ok(());

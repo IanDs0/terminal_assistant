@@ -1,8 +1,9 @@
 use clap::{
-    Args, 
+    // Args, 
     Parser, 
-    Subcommand
+    // Subcommand
 };
+
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -32,13 +33,21 @@ pub struct RegisterToken {
 
 #[derive(Parser, Debug)]
 pub struct HelpCommand {
+    /// Question to command
+    // #[clap(short, long)]
+    pub question: String,
+    
     /// Token to use
     #[clap(short, long)]
-    pub token: String,
+    pub token: Option<String>,
 
-    /// Question to command
+    /// Max tokens to use
     #[clap(short, long)]
-    pub question: String,
+    pub max_tokens: Option<u32>,
+
+    /// User to use
+    #[clap(short, long)]
+    pub user: Option<String>,
 }
 
 #[derive(Parser, Debug)]
