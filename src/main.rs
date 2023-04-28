@@ -20,8 +20,33 @@ use args::AssistantArgs;
 use args::HelperType;
 
 #[derive(Debug, Serialize, Deserialize)]
-struct ChatMessage {
-    text: Option<String>,
+struct MessageChoices{
+    role: String,
+    content: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct ResponseMessageChoices{
+    message: MessageChoices,
+    finish_reason: String,
+    index: u32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct Usage{
+    prompt_tokens: u32,
+    completion_tokens: u32,
+    total_tokens: u32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct ResponseMessage {
+    id: String,
+    object: String,
+    created: u32,
+    model: String,
+    usage: Usage,
+    choices: Vec<ResponseMessageChoices>,
 }
 /// Simple program to greet a person
 #[derive(clap::Parser, Debug)]
@@ -38,7 +63,7 @@ fn get_api(
     prompt:String, 
     token:String, 
     user:String,
-    max_tokens:u32,
+    _max_tokens:u32,
     ) -> Result<(), Error>{
 
     let client = reqwest::blocking::Client::new();
@@ -59,7 +84,7 @@ fn get_api(
                 }
             ],
             "user": user,
-            "max_tokens": max_tokens,
+            // "max_tokens": max_tokens,
             // "temperature": 0,
             // "top_p": 1,
             // "n": 1,
@@ -68,8 +93,11 @@ fn get_api(
             // "stop": "\n"
         }))
         .send();
-
-    println!("{}", response?.text()?);
+    let teste: ResponseMessage = match serde_json::from_str(response?.text()?.as_str()){
+        Ok(teste) => teste,
+        Err(e) => panic!("Error: {}", e),
+    };
+    println!("{}", teste.choices[0].message.content);
 
     Ok(())
 }
@@ -145,7 +173,21 @@ fn main() {
         },
 
         HelperType::CrateTranscription(crate_transcription) => {
-            println!("{}", crate_transcription.token);
+            // println!("{}", crate_transcription.token);
+
+            let input = crate_transcription.file_path;
+            match input.contains(".") {
+                true => {
+                    if let Ok(current_dir) = std::env::current_dir() {
+                        println!("{:?}{}", current_dir, input);
+                    } else {
+                        println!("Não foi possível obter o diretório atual.");
+                    }
+                },
+                false => {
+                    println!("{:?}", input);
+                },
+            };
         },
     };
     // Ok(());

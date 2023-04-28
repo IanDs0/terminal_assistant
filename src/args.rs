@@ -52,15 +52,16 @@ pub struct HelpCommand {
 
 #[derive(Parser, Debug)]
 pub struct CrateTranscription{
-    /// Token to use
-    #[clap(short, long)]
-    pub token: String,
+
+    /// Path to file
+    // #[clap(short, long)]
+    pub file_path: String,
 
     /// Question to command
     #[clap(short, long)]
-    pub text: String,
-
-    /// Path to file
+    pub save_name: Option<String>,
+    
+    /// Token to use
     #[clap(short, long)]
-    pub path: String,
+    pub token: Option<String>,
 }
