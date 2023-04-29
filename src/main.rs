@@ -1,6 +1,4 @@
-// // use std::collections::HashMap;
-// use std::io;
-
+use infer::Infer;
 use reqwest::Error;
 use reqwest::header::AUTHORIZATION;
 
@@ -11,11 +9,16 @@ use serde::{Deserialize, Serialize};
 
 use std::fs;
 use std::io::Write;
+use std::path::PathBuf;
+// // use std::collections::HashMap;
+use std::env::args;
+use std::process::exit;
+
+use infer;//::{Infer, Type};
 
 use dotenv::dotenv;
 
 mod args;
-
 use args::AssistantArgs;
 use args::HelperType;
 
@@ -172,22 +175,69 @@ fn main() {
             
         },
 
+        /*tamanho maximo de 25mb dos tipos [
+            mp3, infer::audio::is_mp3
+            mp4, infer::video::is_mp4
+            mpeg, infer::video::is_mpeg
+            mpga, //n deu
+            m4a, infer::audio::is_m4a
+            wav, infer::audio::is_wav
+            webm infer::video::is_webm
+            ].
+        */
         HelperType::CrateTranscription(crate_transcription) => {
             // println!("{}", crate_transcription.token);
 
-            let input = crate_transcription.file_path;
-            match input.contains(".") {
-                true => {
-                    if let Ok(current_dir) = std::env::current_dir() {
-                        println!("{:?}{}", current_dir, input);
-                    } else {
-                        println!("Não foi possível obter o diretório atual.");
+            let mut file_path = PathBuf::from(crate_transcription.file_path);
+
+            // Verifica se o caminho é relativo
+            if file_path.is_relative() {
+                // Transforma o caminho relativo em um caminho absoluto
+                if let Ok(abs_path) = std::fs::canonicalize(&file_path) {
+                    file_path = abs_path;
+                } else {
+                    println!("Caminho relativo inválido");
+                    return;
+                }
+            }
+
+            // Verifica se o arquivo existe
+            if file_path.exists() {
+                // Obtém o nome do arquivo
+                let file_name = file_path
+                    .file_name()
+                    .and_then(|os_str| os_str.to_str())
+                    .unwrap();
+                println!("Nome do arquivo: {}", file_name);
+
+            
+                match infer::get_from_path(file_path.to_string_lossy().to_string()) {
+                    Ok(Some(info)) => {
+
+                        match info.extension() {
+                            "mp3" => println!("Arquivo de áudio MP3 válido!"),
+                            "mp4" => println!("Arquivo de vídeo MP4 válido!"),
+                            "mpeg" => println!("Arquivo de vídeo MPEG válido!"),
+                            "m4a" => println!("Arquivo de áudio MPEG-4 válido!"),
+                            "wav" => println!("Arquivo de áudio WAV válido!"),
+                            "webm" => println!("Arquivo de vídeo WebM válido!"),
+                            _ => println!("Arquivo inválido"),
+                        }
+
                     }
-                },
-                false => {
-                    println!("{:?}", input);
-                },
-            };
+                    Ok(None) => {
+                        eprintln!("Unknown file type 😞");
+                        eprintln!("If you think the assissten should be able to recognize this file type open an issue on GitHub!");
+                    }
+                    Err(e) => {
+                        eprintln!("Looks like something went wrong 😔");
+                        eprintln!("{}", e);
+                    }
+                }            
+
+            } else {
+                println!("File not found");
+            }
         },
     };
     // Ok(());
