@@ -1,4 +1,3 @@
-use infer::Infer;
 use reqwest::Error;
 use reqwest::header::AUTHORIZATION;
 
@@ -11,8 +10,8 @@ use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
 // // use std::collections::HashMap;
-use std::env::args;
-use std::process::exit;
+// use std::env::args;
+// use std::process::exit;
 
 use infer;//::{Infer, Type};
 
@@ -21,6 +20,10 @@ use dotenv::dotenv;
 mod args;
 use args::AssistantArgs;
 use args::HelperType;
+
+mod enums;
+
+mod api;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct MessageChoices{
@@ -50,14 +53,6 @@ struct ResponseMessage {
     model: String,
     usage: Usage,
     choices: Vec<ResponseMessageChoices>,
-}
-/// Simple program to greet a person
-#[derive(clap::Parser, Debug)]
-#[command(author, version, about, long_about = None)]
-pub struct Args {
-    /// Token to use
-    #[arg(short, long)]
-    token: String,
 }
 
 
@@ -175,16 +170,7 @@ fn main() {
             
         },
 
-        /*tamanho maximo de 25mb dos tipos [
-            mp3, infer::audio::is_mp3
-            mp4, infer::video::is_mp4
-            mpeg, infer::video::is_mpeg
-            mpga, //n deu
-            m4a, infer::audio::is_m4a
-            wav, infer::audio::is_wav
-            webm infer::video::is_webm
-            ].
-        */
+        /*tamanho maximo de 25mb dos tipos [mp3, mp4, mpeg, mpga, m4a, wav, webm].*/
         HelperType::CrateTranscription(crate_transcription) => {
             // println!("{}", crate_transcription.token);
 
@@ -243,6 +229,14 @@ fn main() {
     // Ok(());
 }
 
+
+/*- Apresentasao
+- Justificativa
+- Problema de Pesquisa
+- Objetivo geral
+- Objetivo específico
+- Metodologia
+- Estrutura de Capítulos */
 
 /*
 {
