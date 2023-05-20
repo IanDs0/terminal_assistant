@@ -6,11 +6,3 @@ pub enum RoleMessage {
     user,
     system,
 }
-
-pub fn parse_role(role: &RoleMessage) -> String {
-    match role {
-        RoleMessage::assistant => String::from("assistant"),
-        RoleMessage::user => String::from("user"),
-        RoleMessage::system => String::from("system"),
-    }
-}

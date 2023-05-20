@@ -1,4 +1,4 @@
-use std::vec;
+// use std::vec;
 
 use reqwest::Error;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
@@ -7,93 +7,13 @@ use serde::{Deserialize, Serialize};
 
 use crate::enums;
 use enums::model_chat_completion::Model;
-use enums::role_message::RoleMessage;
-use enums::role_message::parse_role;
+// use enums::role_message::RoleMessage;
+// use enums::role_message::parse_role;
 
 use crate::structs;
 use structs::message_chat_completion::Message;
 // use structs::message_chat_completion::format_messages;
 use structs::user_chat::ChatUser;
-
-/*
-//user
-//
-struct ChatUser{
-    pub user_name: String,
-    pub token: String,
-}
-//
-impl ChatUser{
-    fn new(
-            user_name: String, 
-            token: String
-            ) -> Self{
-
-        ChatUser{
-            user_name: user_name,
-            token: token,
-        }
-    }
-}
-*/
-
-/*
-//message
-//foi
-#[derive(Debug, Serialize, Deserialize)]
-enum RoleMessage {
-    assistant,
-    user,
-    system,
-}
-//temporario
-#[derive(Debug, Serialize, Deserialize)]
-struct Message{
-    role: RoleMessage,
-    content: String,
-    name:String,
-}
- */
-
-/*
-//model
-//foi
-#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
-enum Model {
-    gpt_4, 
-    gpt_4_0314,
-    gpt_4_32k, 
-    gpt_4_32k_0314, 
-    gpt_35_turbo, 
-    gpt_35_turbo_0301
-}
-//foi
-impl Model {
-    
-    fn parse_model(&self) -> String {
-        
-        match self {
-            Model::gpt_4 => String::from("gpt-4"),
-            Model::gpt_4_0314 => String::from("gpt-4-0314"),
-            Model::gpt_4_32k => String::from("gpt-4-32k"),
-            Model::gpt_4_32k_0314 => String::from("gpt-4-32k-0314"),
-            Model::gpt_35_turbo => String::from("gpt-3.5-turbo"),
-            Model::gpt_35_turbo_0301 => String::from("gpt-3.5-turbo-0301"),
-        }
-        
-        // match s {
-        //     "gpt-4" => Some(Model::gpt_4),
-        //     "gpt-4-0314" => Some(Model::gpt_4_0314),
-        //     "gpt-4-32k" => Some(Model::gpt_4_32k),
-        //     "gpt-4-32k-0314" => Some(Model::gpt_4_32k_0314),
-        //     "gpt-3.5-turbo" => Some(Model::gpt_35_turbo),
-        //     "gpt-3.5-turbo-0301" => Some(Model::gpt_35_turbo_0301),
-        //     _ => None,
-        // }
-    }
-}
-*/
-
 
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -196,7 +116,7 @@ impl ChatCompletion{
             HeaderValue::from_str(&format!("Bearer {}", self.user.token)).unwrap(),
         );
 
-        let mut json = serde_json::json!({
+        let body = serde_json::json!({
             "model": self.model.parse_model(),
             "messages": serde_json::json!(self.messages),
             "user": self.user.user_name,
@@ -212,8 +132,9 @@ impl ChatCompletion{
         let response = client
             .post("https://api.openai.com/v1/chat/completions")
             .headers(headers)
-            .body(json.to_string())
+            .body(body.to_string())
             .send();
+
         let teste: ResponseMessage = match serde_json::from_str(response?.text()?.as_str()){
             Ok(teste) => teste,
             Err(e) => panic!("Error: {}", e),
