@@ -22,9 +22,16 @@ use args::AssistantArgs;
 use args::HelperType;
 
 mod enums;
+use crate::enums::model_chat_completion;
+use crate::enums::role_message;
 
 mod api;
+use crate::api::chat_completion;
 
+mod structs;
+use crate::structs::user_chat::ChatUser;
+use crate::structs::message_chat_completion;
+/*
 #[derive(Debug, Serialize, Deserialize)]
 struct MessageChoices{
     role: String,
@@ -54,8 +61,9 @@ struct ResponseMessage {
     usage: Usage,
     choices: Vec<ResponseMessageChoices>,
 }
+*/
 
-
+/*
 // #[tokio::main]
 fn get_api(
     prompt:String, 
@@ -99,6 +107,7 @@ fn get_api(
 
     Ok(())
 }
+*/
 
 
 fn main() {
@@ -124,8 +133,76 @@ fn main() {
 
         
         HelperType::HelpCommand(help_command) => {
-            // println!("{:?}", help_command.token);
 
+            //token
+            // println!("{:?}", help_command.token);
+            let token = "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".to_string(); 
+            
+
+
+            //model
+            let model: model_chat_completion::Model = model_chat_completion::Model::gpt_35_turbo;
+            // println!("{}", model.parse_model());
+
+
+
+            //user set
+            let user_chat: ChatUser = ChatUser::new(
+                help_command.user.unwrap_or(user),
+                help_command.token.unwrap_or(token),
+            );
+            // println!("{:?}", user_chat);
+
+
+
+            //array promt
+            let default_chat: message_chat_completion::Message = message_chat_completion::Message::new(
+                role_message::RoleMessage::system,
+                "You are a handy terminal command assistant that only responds to the command and response in pt-br. answer me in the space of 15 tokens".to_string(), 
+                None
+            );
+
+            // println!("{:?}", default_chat);
+
+            let mut array:Vec<message_chat_completion::Message> = Vec::new();
+
+            array.push(default_chat);
+
+            //promt usuario
+            let default_chat: message_chat_completion::Message = message_chat_completion::Message::new(
+                role_message::RoleMessage::user,
+                help_command.question, 
+                Some("Ian".to_string())
+            );
+
+            // println!("{:?}", default_chat);
+
+            array.push(default_chat);
+
+            // println!("{:?}", array);
+
+            let temperature:f32 = 0.0;
+            let top_p:f32 = 1.0;
+            let n:u64 = 1;
+
+            let mut chat: chat_completion::ChatCompletion = chat_completion::ChatCompletion::new(
+                user_chat,
+                model,
+                array,
+                temperature,
+                top_p,
+                n,
+                max_tokens,
+            );
+
+            // println!("\n\n\n{:?}\n\n\n", chat);
+
+            match chat.get_api(){
+                Ok(_) => {},
+                Err(e) => println!("Error: {}", e),
+            };
+
+            /*
             match help_command.token {
                 Some(token) => {
                     match get_api(
@@ -166,7 +243,7 @@ fn main() {
                     return;
                 }
             };
-
+            */
             
         },
 
@@ -229,14 +306,6 @@ fn main() {
     // Ok(());
 }
 
-
-/*- Apresentasao
-- Justificativa
-- Problema de Pesquisa
-- Objetivo geral
-- Objetivo específico
-- Metodologia
-- Estrutura de Capítulos */
 
 /*
 {
