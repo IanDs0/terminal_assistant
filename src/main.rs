@@ -1,16 +1,11 @@
 use clap::Parser;
 use clap;
 
-// use serde::{Deserialize, Serialize};
-
 use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
-// // use std::collections::HashMap;
-// use std::env::args;
-// use std::process::exit;
 
-use infer;//::{Infer, Type};
+use infer;
 
 use dotenv::dotenv;
 
@@ -19,11 +14,10 @@ use args::AssistantArgs;
 use args::HelperType;
 
 mod enums;
-use crate::enums::model_chat_completion;
-use crate::enums::role_message;
+use crate::enums::model_chat_completion::Model;
+use crate::enums::role_message::RoleMessage;
 
 mod api;
-// use crate::api::chat_completion;
 use crate::api::chat_completion::ChatCompletion;
 
 mod structs;
@@ -55,12 +49,12 @@ fn main() {
         HelperType::HelpCommand(help_command) => {
 
             let default_chat: Message = Message::new(
-                role_message::RoleMessage::system,
+                RoleMessage::system,
                 "You are a handy terminal command assistant that only responds to the command and response in pt-br. answer me in the space of 15 tokens".to_string(), 
                 None
             );
 
-            let model: model_chat_completion::Model = model_chat_completion::Model::gpt_35_turbo;
+            let model: Model = Model::Gpt3_5Turbo;
             let mut array:Vec<Message> = Vec::new();
             let temperature:f32 = 0.0;
             let top_p:f32 = 1.0;
@@ -79,7 +73,7 @@ fn main() {
 
                     //promt usuario
                     let default_chat: Message = Message::new(
-                        role_message::RoleMessage::user,
+                        RoleMessage::user,
                         help_command.question, 
                         Some("Ian".to_string())
                     );
@@ -117,7 +111,7 @@ fn main() {
 
                             //promt usuario
                             let default_chat: Message = Message::new(
-                                role_message::RoleMessage::user,
+                                RoleMessage::user,
                                 help_command.question, 
                                 Some("Ian".to_string())
                             );

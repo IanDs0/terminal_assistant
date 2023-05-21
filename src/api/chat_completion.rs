@@ -47,9 +47,6 @@ struct ResponseMessage {
 }
 
 
-
-
-
 //meio q o main
 #[derive(Debug)]
 pub struct ChatCompletion{
@@ -102,7 +99,6 @@ impl ChatCompletion{
         }
     }
 
-    // /*
     pub fn get_api(&self)-> Result<(), Error>{
         let client = reqwest::blocking::Client::new();
 
@@ -135,13 +131,12 @@ impl ChatCompletion{
             .body(body.to_string())
             .send();
 
-        let teste: ResponseMessage = match serde_json::from_str(response?.text()?.as_str()){
-            Ok(teste) => teste,
+        let response: ResponseMessage = match serde_json::from_str(response?.text()?.as_str()){
+            Ok(response) => response,
             Err(e) => panic!("Error: {}", e),
         };
-        println!("{:#}", teste.choices[0].message.content);
+        println!("{:#}", response.choices[0].message.content);
     
         Ok(())
     }
-    // */
 }

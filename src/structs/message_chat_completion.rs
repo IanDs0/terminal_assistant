@@ -1,5 +1,4 @@
 use crate::enums::role_message::RoleMessage;
-// use crate::enums::role_message::parse_role;
 
 use serde::{Deserialize, Serialize};
 
@@ -15,7 +14,6 @@ pub struct Message {
     #[serde(rename = "name")]
     name: Option<String>,
 }
-//46
 
 impl Message {
     pub fn new(
