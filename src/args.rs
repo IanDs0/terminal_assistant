@@ -6,7 +6,7 @@ use clap::{
 
 
 #[derive(Parser, Debug)]
-#[clap(author, version, about, long_about = None)]
+#[clap(author, version, about)]
 pub struct AssistantArgs {
     /// Token to use
     #[clap(subcommand)]
@@ -26,9 +26,9 @@ pub enum HelperType{
 
 #[derive(Parser, Debug)]
 pub struct RegisterToken {
-    /// Token to use
+    /// Key to use
     #[clap(short, long)]
-    pub token: String,
+    pub key: String,
 }
 
 #[derive(Parser, Debug)]
@@ -37,17 +37,33 @@ pub struct HelpCommand {
     // #[clap(short, long)]
     pub question: String,
     
-    /// Token to use
+    /// Key to use
     #[clap(short, long)]
-    pub token: Option<String>,
+    pub key: Option<String>,
 
     /// Max tokens to use
-    #[clap(short, long)]
+    #[clap(long)]
     pub max_tokens: Option<u32>,
 
     /// User to use
     #[clap(short, long)]
     pub user: Option<String>,
+
+    /// Use to temperature
+    #[clap(long)]
+    pub temperature: Option<f32>,
+
+    /// Use to top_p
+    #[clap(long)]
+    pub top_p: Option<f32>,
+    
+    /// Use to n
+    #[clap(short, long)]
+    pub n: Option<u64>,
+
+    /// Use to model
+    #[clap(long)]
+    pub model: Option<String>,
 }
 
 #[derive(Parser, Debug)]
@@ -61,7 +77,7 @@ pub struct CrateTranscription{
     #[clap(short, long)]
     pub save_name: Option<String>,
     
-    /// Token to use
+    /// Key to use
     #[clap(short, long)]
-    pub token: Option<String>,
+    pub key: Option<String>,
 }

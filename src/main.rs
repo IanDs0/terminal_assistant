@@ -28,18 +28,17 @@ fn main() {
     
     let args = AssistantArgs::parse();
     
-    let max_tokens:u32 = 25;
     let user:String = "Ian".to_string();
     
     match args.helper {
         HelperType::RegisterToken(register_token) => {
-            // println!("{}", RegisterToken.token);
+            // println!("{}", RegisterToken.key);
             
             let mut file = match fs::File::create(".env"){
                 Ok(file) => file,
                 Err(e) => panic!("Error: {}", e),
             };
-            match file.write_all(("TOKEN=".to_owned() + &register_token.token).as_bytes()){
+            match file.write_all(("KEY=".to_owned() + &register_token.key).as_bytes()){
                 Ok(_) => return,
                 Err(e) => println!("Error: {}", e),
             };
@@ -56,18 +55,15 @@ fn main() {
 
             let model: Model = Model::Gpt3_5Turbo;
             let mut array:Vec<Message> = Vec::new();
-            let temperature:f32 = 0.0;
-            let top_p:f32 = 1.0;
-            let n:u64 = 1;
 
             array.push(default_chat);
 
-            match help_command.token {
+            match help_command.key {
                 Some(token) => {
 
                     //user set
                     let user_chat: ChatUser = ChatUser::new(
-                        help_command.user.unwrap_or(user),
+                        Some(help_command.user.unwrap_or(user)),
                         token,
                     );
 
@@ -85,14 +81,23 @@ fn main() {
                         user_chat,
                         model,
                         array,
-                        temperature,
-                        top_p,
-                        n,
-                        max_tokens,
+                        help_command.temperature,
+                        help_command.top_p,
+                        help_command.n,
+                        help_command.max_tokens,
+                        Some(false),
+                        
+                        None,
+                    
+                        None,
+                        None,
                     );
 
                     match chat.get_api(){
-                        Ok(_) => {},
+                        Ok(response) => {
+                            println!("{:#}", response.choices[0].message.content);
+                            return;
+                        },
                         Err(e) => println!("Error: {}", e),
                     };
                 },
@@ -101,11 +106,11 @@ fn main() {
                         if metadata.is_file() {
                             
                             dotenv().ok();
-                            let token = std::env::var("TOKEN").unwrap();
+                            let token = std::env::var("KEY").unwrap();
 
                             //user set
                             let user_chat: ChatUser = ChatUser::new(
-                                help_command.user.unwrap_or(user),
+                                Some(help_command.user.unwrap_or(user)),
                                 token,
                             );
 
@@ -123,22 +128,30 @@ fn main() {
                                 user_chat,
                                 model,
                                 array,
-                                temperature,
-                                top_p,
-                                n,
-                                max_tokens,
+                                help_command.temperature,
+                                help_command.top_p,
+                                help_command.n,
+                                help_command.max_tokens,
+                                Some(false),
+                                
+                                None,
+                                None,
+                                None,
                             );
 
                             match chat.get_api(){
-                                Ok(_) => {},
+                                Ok(response) => {
+                                    println!("{:#}", response.choices[0].message.content);
+                                    return;
+                                },
                                 Err(e) => println!("Error: {}", e),
                             };
 
                         } else {
-                            println!("Register the Token so you can make this call or use the ' --token ' parameter");
+                            println!("Register the Token so you can make this call or use the ' --key ' parameter");
                         }
                     } else {
-                        println!("Register the Token so you can make this call or use the ' --token ' parameter");
+                        println!("Register the Token so you can make this call or use the ' --key ' parameter");
                     }
                     return;
                 }
